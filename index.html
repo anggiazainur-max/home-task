@@ -1,560 +1,639 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Claude Home — Sistem Rumah Tangga</title>
-<!-- Supabase JS Library -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500;0,600;1,400&family=Outfit:wght@300;400;500;600;700&display=swap');
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Claude Home — Sistem Rumah Tangga</title>
+  <!-- Supabase JS Library -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500;0,600;1,400&family=Outfit:wght@300;400;500;600;700&display=swap');
 
-  :root {
-    --bg: #f9f6f0;       /* Latar belakang warm cream kertas khas Claude */
-    --surface: #ffffff;  /* Container putih bersih */
-    --border: #e6e2d8;   /* Garis pembatas warna warm sand tipis */
-    --border-hover: #cc785c;
-    --text: #1b1816;     /* Hitam arang elegan */
-    --muted: #6e675f;    /* Abu-abu hangat */
-    --accent: #d97756;   /* Coral khas Claude */
-    --accent-hover: #c46241;
-    --accent-light: #fdf5f2;
+    :root {
+      --bg: #f9f6f0;       /* Latar belakang warm cream kertas khas Claude */
+      --surface: #ffffff;  /* Container putih bersih */
+      --border: #e6e2d8;   /* Garis pembatas warna warm sand tipis */
+      --border-hover: #cc785c;
+      --text: #1b1816;     /* Hitam arang elegan */
+      --muted: #6e675f;    /* Abu-abu hangat */
+      --accent: #d97756;   /* Coral khas Claude */
+      --accent-hover: #c46241;
+      --accent-light: #fdf5f2;
+
+      --green: #2a7a43;
+      --green-bg: #f0f9f3;
+      --red: #c53838;
+      --red-bg: #fdf2f2;
+      
+      --shadow: 0 4px 20px rgba(27, 24, 22, 0.04);
+      --radius: 12px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Outfit', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 40px 20px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+
+    /* MAIN APP CONTAINER */
+    .app-container {
+      width: 100%;
+      max-width: 740px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      padding: 32px;
+    }
+
+    /* BRAND HEADER */
+    .brand-header {
+      text-align: center;
+      margin-bottom: 28px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 24px;
+    }
+
+    .brand-logo {
+      font-family: 'Lora', serif;
+      font-size: 0.95rem;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .brand-logo::before, .brand-logo::after {
+      content: '';
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      background: var(--accent);
+      border-radius: 50%;
+    }
+
+    h1 {
+      font-family: 'Lora', serif;
+      font-size: 2.1rem;
+      font-weight: 500;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin-bottom: 14px;
+    }
+
+    /* Cloud Sync Status Badge */
+    .sync-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 6px 14px;
+      border-radius: 30px;
+      background: var(--red-bg);
+      color: var(--red);
+      border: 1px solid rgba(197, 56, 56, 0.15);
+      transition: all 0.3s;
+    }
+
+    .sync-badge.online {
+      background: var(--green-bg);
+      color: var(--green);
+      border-color: rgba(42, 122, 67, 0.15);
+    }
+
+    .sync-badge.warning {
+      background: #fdf9f0;
+      color: #a07218;
+      border-color: rgba(160, 114, 24, 0.15);
+    }
+
+    /* NAVIGATION TABS */
+    .tabs {
+      display: flex;
+      gap: 4px;
+      background: #f4efe6;
+      border-radius: 10px;
+      padding: 4px;
+      margin-bottom: 28px;
+      overflow-x: auto;
+    }
+
+    .tab {
+      flex: 1;
+      min-width: 80px;
+      padding: 10px 8px;
+      border: none;
+      border-radius: 8px;
+      background: transparent;
+      color: var(--muted);
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease-in-out;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    .tab.active {
+      background: var(--surface);
+      color: var(--text);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      font-weight: 600;
+    }
+
+    .tab:hover:not(.active) {
+      color: var(--text);
+    }
+
+    .panel { display: none; }
+    .panel.active { display: block; animation: fadeIn 0.3s ease; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* SECTION CARDS */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 20px;
+      transition: border-color 0.2s;
+    }
+
+    .card h2 {
+      font-family: 'Lora', serif;
+      font-size: 1.15rem;
+      font-weight: 500;
+      margin-bottom: 16px;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* DYNAMIC MEMBER THEME CLASSES */
+    .color-blue { background: #eff6f9 !important; border-color: rgba(47, 102, 126, 0.2) !important; color: #2f667e !important; }
+    .color-purple { background: #fcf4f8 !important; border-color: rgba(147, 76, 122, 0.2) !important; color: #934c7a !important; }
+    .color-green { background: #f0f7f4 !important; border-color: rgba(45, 107, 86, 0.2) !important; color: #2d6b56 !important; }
+    .color-amber { background: #fdf9f0 !important; border-color: rgba(160, 114, 24, 0.2) !important; color: #a07218 !important; }
+    .color-coral { background: #fdf5f2 !important; border-color: rgba(217, 119, 86, 0.2) !important; color: #d97756 !important; }
+    .color-slate { background: #f5f5f4 !important; border-color: rgba(110, 103, 95, 0.2) !important; color: #6e675f !important; }
+
+    /* BADGES */
+    .badge-blue { background: #eff6f9 !important; color: #2f667e !important; }
+    .badge-purple { background: #fcf4f8 !important; color: #934c7a !important; }
+    .badge-green { background: #f0f7f4 !important; color: #2d6b56 !important; }
+    .badge-amber { background: #fdf9f0 !important; color: #a07218 !important; }
+    .badge-coral { background: #fdf5f2 !important; color: #d97756 !important; }
+    .badge-slate { background: #f5f5f4 !important; color: #6e675f !important; }
+
+    /* MEMBER BADGES GRID */
+    .members-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 12px;
+    }
+
+    .member-badge {
+      border-radius: var(--radius);
+      padding: 16px 12px;
+      text-align: center;
+      font-weight: 600;
+      font-size: 0.95rem;
+      border: 1px solid var(--border);
+      background: #fafaf9;
+      transition: all 0.2s;
+    }
+
+    .member-count {
+      font-size: 0.78rem;
+      font-weight: 400;
+      margin-top: 4px;
+      opacity: 0.8;
+    }
+
+    /* TASK ITEM & EDITING */
+    .task-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px;
+      border-radius: var(--radius);
+      background: var(--surface);
+      margin-bottom: 10px;
+      border: 1px solid var(--border);
+      transition: all 0.2s;
+    }
+
+    .task-item:hover {
+      border-color: var(--accent);
+      box-shadow: 0 2px 12px rgba(217, 119, 86, 0.04);
+    }
+
+    .task-item.done {
+      background: #fafaf9;
+      border-color: var(--border);
+    }
     
-    /* Elegant soft warm colors for family members */
-    --ayah: #2f667e;
-    --ayah-bg: #eff6f9;
-    --ibu: #934c7a;
-    --ibu-bg: #fcf4f8;
-    --kakak: #2d6b56;
-    --kakak-bg: #f0f7f4;
-    --adik: #a07218;
-    --adik-bg: #fdf9f0;
+    .task-item.done .task-name {
+      text-decoration: line-through;
+      color: var(--muted);
+    }
 
-    --green: #2a7a43;
-    --green-bg: #f0f9f3;
-    --red: #c53838;
-    --red-bg: #fdf2f2;
+    .task-check {
+      width: 22px;
+      height: 22px;
+      border-radius: 6px;
+      border: 1.5px solid var(--border);
+      background: var(--surface);
+      cursor: pointer;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+
+    .task-check.checked {
+      background: var(--accent);
+      border-color: var(--accent);
+    }
     
-    --shadow: 0 4px 20px rgba(27, 24, 22, 0.04);
-    --radius: 12px;
-  }
+    .task-check.checked::after {
+      content: '✓';
+      color: white;
+      font-weight: 700;
+      font-size: 13px;
+    }
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+    .task-info { flex: 1; }
+    .task-name { font-size: 0.92rem; font-weight: 500; color: var(--text); }
+    .task-meta { font-size: 0.78rem; color: var(--muted); margin-top: 3px; }
 
-  body {
-    font-family: 'Outfit', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    padding: 40px 20px;
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-  }
+    /* Inline Task Editing Layout */
+    .task-edit-row {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      width: 100%;
+    }
 
-  /* MAIN APP CONTAINER */
-  .app-container {
-    width: 100%;
-    max-width: 740px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    box-shadow: var(--shadow);
-    padding: 32px;
-  }
+    .task-edit-inputs {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
 
-  /* BRAND HEADER */
-  .brand-header {
-    text-align: center;
-    margin-bottom: 28px;
-    border-bottom: 1px solid var(--border);
-    padding-bottom: 24px;
-  }
+    .task-edit-actions {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+    }
 
-  .brand-logo {
-    font-family: 'Lora', serif;
-    font-size: 0.95rem;
-    font-weight: 600;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    color: var(--accent);
-    margin-bottom: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-  }
+    /* ACTION BUTTONS */
+    .action-btn {
+      background: none;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 14px;
+      padding: 6px;
+      border-radius: 6px;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+    .action-btn:hover {
+      color: var(--accent);
+      background: var(--accent-light);
+    }
+    
+    .delete-btn:hover {
+      color: var(--red);
+      background: var(--red-bg);
+    }
 
-  .brand-logo::before, .brand-logo::after {
-    content: '';
-    display: inline-block;
-    width: 6px;
-    height: 6px;
-    background: var(--accent);
-    border-radius: 50%;
-  }
+    /* FORMS & INPUTS */
+    .form-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
 
-  h1 {
-    font-family: 'Lora', serif;
-    font-size: 2.1rem;
-    font-weight: 500;
-    color: var(--text);
-    margin-bottom: 6px;
-  }
+    input, select {
+      flex: 1;
+      min-width: 130px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.88rem;
+      padding: 10px 14px;
+      outline: none;
+      transition: all 0.2s;
+    }
 
-  .subtitle {
-    color: var(--muted);
-    font-size: 0.9rem;
-    margin-bottom: 14px;
-  }
+    input:focus, select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(217, 119, 86, 0.1);
+    }
 
-  /* Cloud Sync Status Badge */
-  .sync-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    padding: 6px 14px;
-    border-radius: 30px;
-    background: var(--red-bg);
-    color: var(--red);
-    border: 1px solid rgba(197, 56, 56, 0.15);
-    transition: all 0.3s;
-  }
+    select option { background: var(--surface); }
 
-  .sync-badge.online {
-    background: var(--green-bg);
-    color: var(--green);
-    border-color: rgba(42, 122, 67, 0.15);
-  }
+    /* BUTTONS */
+    .btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
 
-  /* NAVIGATION TABS (Segmented Control style) */
-  .tabs {
-    display: flex;
-    gap: 4px;
-    background: #f4efe6;
-    border-radius: 10px;
-    padding: 4px;
-    margin-bottom: 28px;
-    overflow-x: auto;
-  }
+    .btn-primary {
+      background: var(--accent);
+      color: white;
+    }
+    .btn-primary:hover {
+      background: var(--accent-hover);
+      transform: translateY(-1px);
+    }
 
-  .tab {
-    flex: 1;
-    min-width: 80px;
-    padding: 10px 8px;
-    border: none;
-    border-radius: 8px;
-    background: transparent;
-    color: var(--muted);
-    font-family: 'Outfit', sans-serif;
-    font-size: 0.85rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s ease-in-out;
-    text-align: center;
-    white-space: nowrap;
-  }
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+    }
+    .btn-outline:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: var(--accent-light);
+    }
 
-  .tab.active {
-    background: var(--surface);
-    color: var(--text);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-    font-weight: 600;
-  }
+    .btn-success {
+      background: var(--green);
+      color: white;
+    }
+    .btn-success:hover {
+      opacity: 0.95;
+      transform: translateY(-1px);
+    }
 
-  .tab:hover:not(.active) {
-    color: var(--text);
-  }
+    .btn-danger {
+      background: var(--red-bg);
+      border: 1px solid rgba(197, 56, 56, 0.15);
+      color: var(--red);
+    }
+    .btn-danger:hover {
+      background: var(--red);
+      color: white;
+    }
 
-  .panel { display: none; }
-  .panel.active { display: block; animation: fadeIn 0.3s ease; }
+    /* MOTIVATIONAL TOAST */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #1b1816;
+      color: #f9f6f0;
+      padding: 16px 22px;
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(27, 24, 22, 0.15);
+      font-size: 0.88rem;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      z-index: 9999;
+      transform: translateY(120px);
+      opacity: 0;
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      border: 1px solid rgba(217, 119, 86, 0.25);
+      max-width: 320px;
+    }
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    .toast-icon {
+      font-size: 1.4rem;
+      animation: pulse 1s infinite alternate;
+    }
+    @keyframes pulse {
+      from { transform: scale(1); }
+      to { transform: scale(1.15); }
+    }
 
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(4px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
+    /* STATS PROGRESS */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
 
-  /* SECTION CARDS */
-  .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 20px;
-    margin-bottom: 20px;
-    transition: border-color 0.2s;
-  }
+    .stat-box {
+      background: #fafaf9;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      text-align: center;
+    }
 
-  .card h2 {
-    font-family: 'Lora', serif;
-    font-size: 1.15rem;
-    font-weight: 500;
-    margin-bottom: 16px;
-    color: var(--text);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
+    .stat-num {
+      font-family: 'Lora', serif;
+      font-size: 1.9rem;
+      font-weight: 600;
+      color: var(--accent);
+    }
 
-  /* MEMBER BADGES GRID */
-  .members-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-    gap: 12px;
-  }
+    .stat-label {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-top: 4px;
+      font-weight: 500;
+    }
 
-  .member-badge {
-    border-radius: var(--radius);
-    padding: 16px 12px;
-    text-align: center;
-    font-weight: 600;
-    font-size: 0.95rem;
-    border: 1px solid var(--border);
-    background: #fafaf9;
-    transition: all 0.2s;
-  }
+    .progress-bar {
+      height: 8px;
+      background: #f4efe6;
+      border-radius: 10px;
+      overflow: hidden;
+      margin: 8px 0;
+    }
 
-  .member-badge.ayah { background: var(--ayah-bg); border-color: rgba(47, 102, 126, 0.15); color: var(--ayah); }
-  .member-badge.ibu  { background: var(--ibu-bg); border-color: rgba(147, 76, 122, 0.15); color: var(--ibu); }
-  .member-badge.kakak { background: var(--kakak-bg); border-color: rgba(45, 107, 86, 0.15); color: var(--kakak); }
-  .member-badge.adik { background: var(--adik-bg); border-color: rgba(160, 114, 24, 0.15); color: var(--adik); }
+    .progress-fill {
+      height: 100%;
+      border-radius: 10px;
+      background: var(--accent);
+      transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
 
-  .member-count {
-    font-size: 0.78rem;
-    font-weight: 400;
-    margin-top: 4px;
-    opacity: 0.8;
-  }
+    /* SCHEDULE */
+    .schedule-day {
+      border-left: 2px solid var(--accent);
+      padding-left: 16px;
+      margin-bottom: 18px;
+    }
 
-  /* TASK ITEM */
-  .task-item {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    padding: 14px;
-    border-radius: var(--radius);
-    background: var(--surface);
-    margin-bottom: 10px;
-    border: 1px solid var(--border);
-    transition: all 0.2s;
-  }
+    .day-name {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
 
-  .task-item:hover {
-    border-color: var(--accent);
-    box-shadow: 0 2px 12px rgba(217, 119, 86, 0.04);
-  }
+    .schedule-task {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px dashed var(--border);
+      font-size: 0.9rem;
+    }
+    .schedule-task:last-child { border-bottom: none; }
 
-  .task-item.done {
-    background: #fafaf9;
-    border-color: var(--border);
-  }
-  
-  .task-item.done .task-name {
-    text-decoration: line-through;
-    color: var(--muted);
-  }
+    /* REMINDERS */
+    .reminder-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px;
+      background: #fafaf9;
+      border-radius: var(--radius);
+      margin-bottom: 10px;
+      border: 1px solid var(--border);
+      font-size: 0.9rem;
+    }
 
-  .task-check {
-    width: 22px;
-    height: 22px;
-    border-radius: 6px;
-    border: 1.5px solid var(--border);
-    background: var(--surface);
-    cursor: pointer;
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s;
-  }
+    .reminder-time { color: var(--muted); font-size: 0.78rem; margin-top: 2px; }
+    
+    .reminder-active {
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 20px;
+      background: var(--green-bg);
+      color: var(--green);
+    }
 
-  .task-check.checked {
-    background: var(--accent);
-    border-color: var(--accent);
-  }
-  
-  .task-check.checked::after {
-    content: '✓';
-    color: white;
-    font-weight: 700;
-    font-size: 13px;
-  }
+    /* MEMBER LIST MANAGEMENT TABLE */
+    .m-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 16px;
+      font-size: 0.9rem;
+    }
 
-  .task-info { flex: 1; }
-  .task-name { font-size: 0.92rem; font-weight: 500; color: var(--text); }
-  .task-meta { font-size: 0.78rem; color: var(--muted); margin-top: 3px; }
+    .m-table th, .m-table td {
+      padding: 10px 12px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
 
-  /* MEMBER BADGES IN TASKS */
-  .badge {
-    font-size: 0.72rem;
-    font-weight: 600;
-    padding: 4px 10px;
-    border-radius: 20px;
-    flex-shrink: 0;
-  }
+    .m-table th {
+      font-weight: 600;
+      color: var(--muted);
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
 
-  .badge.ayah { background: var(--ayah-bg); color: var(--ayah); }
-  .badge.ibu  { background: var(--ibu-bg); color: var(--ibu); }
-  .badge.kakak { background: var(--kakak-bg); color: var(--kakak); }
-  .badge.adik { background: var(--adik-bg); color: var(--adik); }
+    /* CLOUD HELP SECTION */
+    .help-box {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      padding: 16px;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      color: var(--muted);
+      line-height: 1.5;
+      margin-top: 20px;
+    }
 
-  .delete-btn {
-    background: none;
-    border: none;
-    color: var(--muted);
-    cursor: pointer;
-    font-size: 15px;
-    padding: 6px;
-    border-radius: 6px;
-    transition: all 0.2s;
-    flex-shrink: 0;
-  }
-  .delete-btn:hover {
-    color: var(--red);
-    background: var(--red-bg);
-  }
+    .help-box strong { color: var(--text); }
+    .help-box ol { margin-left: 18px; margin-top: 8px; }
+    .help-box li { margin-bottom: 6px; }
 
-  /* FORMS & INPUTS */
-  .form-row {
-    display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
-    margin-bottom: 12px;
-  }
+    .sql-code {
+      background: #1b1816;
+      color: #e6e2d8;
+      font-family: monospace;
+      padding: 12px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      margin: 10px 0;
+      overflow-x: auto;
+      white-space: pre;
+      display: block;
+      border: 1px solid #3c352e;
+    }
 
-  input, select {
-    flex: 1;
-    min-width: 130px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    color: var(--text);
-    font-family: 'Outfit', sans-serif;
-    font-size: 0.88rem;
-    padding: 10px 14px;
-    outline: none;
-    transition: all 0.2s;
-  }
+    .empty {
+      text-align: center;
+      color: var(--muted);
+      padding: 32px;
+      font-size: 0.88rem;
+      font-style: italic;
+    }
 
-  input:focus, select:focus {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(217, 119, 86, 0.1);
-  }
+    /* CLAUDE BRAND FOOTER */
+    .brand-footer {
+      text-align: center;
+      margin-top: 32px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
 
-  select option { background: var(--surface); }
+    .brand-footer a {
+      color: var(--accent);
+      text-decoration: none;
+    }
 
-  /* BUTTONS */
-  .btn {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 8px;
-    font-family: 'Outfit', sans-serif;
-    font-size: 0.88rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-  }
+    .brand-footer a:hover {
+      text-decoration: underline;
+    }
 
-  .btn-primary {
-    background: var(--accent);
-    color: white;
-  }
-  .btn-primary:hover {
-    background: var(--accent-hover);
-    transform: translateY(-1px);
-  }
-
-  .btn-outline {
-    background: transparent;
-    border: 1px solid var(--border);
-    color: var(--muted);
-  }
-  .btn-outline:hover {
-    border-color: var(--accent);
-    color: var(--accent);
-    background: var(--accent-light);
-  }
-
-  .btn-success {
-    background: var(--green);
-    color: white;
-  }
-  .btn-success:hover {
-    opacity: 0.95;
-    transform: translateY(-1px);
-  }
-
-  /* STATS PROGRESS */
-  .stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-    gap: 12px;
-    margin-bottom: 20px;
-  }
-
-  .stat-box {
-    background: #fafaf9;
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 16px;
-    text-align: center;
-  }
-
-  .stat-num {
-    font-family: 'Lora', serif;
-    font-size: 1.9rem;
-    font-weight: 600;
-    color: var(--accent);
-  }
-
-  .stat-label {
-    font-size: 0.78rem;
-    color: var(--muted);
-    margin-top: 4px;
-    font-weight: 500;
-  }
-
-  .progress-bar {
-    height: 8px;
-    background: #f4efe6;
-    border-radius: 10px;
-    overflow: hidden;
-    margin: 8px 0;
-  }
-
-  .progress-fill {
-    height: 100%;
-    border-radius: 10px;
-    background: var(--accent);
-    transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  /* SCHEDULE */
-  .schedule-day {
-    border-left: 2px solid var(--accent);
-    padding-left: 16px;
-    margin-bottom: 18px;
-  }
-
-  .day-name {
-    font-size: 0.8rem;
-    font-weight: 700;
-    color: var(--accent);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: 8px;
-  }
-
-  .schedule-task {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 8px 0;
-    border-bottom: 1px dashed var(--border);
-    font-size: 0.9rem;
-  }
-  .schedule-task:last-child { border-bottom: none; }
-
-  /* REMINDERS */
-  .reminder-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 14px;
-    background: #fafaf9;
-    border-radius: var(--radius);
-    margin-bottom: 10px;
-    border: 1px solid var(--border);
-    font-size: 0.9rem;
-  }
-
-  .reminder-time { color: var(--muted); font-size: 0.78rem; margin-top: 2px; }
-  
-  .reminder-active {
-    font-size: 0.72rem;
-    font-weight: 600;
-    padding: 4px 10px;
-    border-radius: 20px;
-    background: var(--green-bg);
-    color: var(--green);
-  }
-
-  /* CLOUD HELP SECTION */
-  .help-box {
-    background: var(--bg);
-    border: 1px solid var(--border);
-    padding: 16px;
-    border-radius: 8px;
-    font-size: 0.82rem;
-    color: var(--muted);
-    line-height: 1.5;
-    margin-top: 20px;
-  }
-
-  .help-box strong { color: var(--text); }
-
-  .help-box ol {
-    margin-left: 18px;
-    margin-top: 8px;
-  }
-
-  .help-box li {
-    margin-bottom: 6px;
-  }
-
-  .sql-code {
-    background: #1b1816;
-    color: #e6e2d8;
-    font-family: monospace;
-    padding: 12px;
-    border-radius: 6px;
-    font-size: 0.75rem;
-    margin: 10px 0;
-    overflow-x: auto;
-    white-space: pre;
-    display: block;
-    border: 1px solid #3c352e;
-  }
-
-  .empty {
-    text-align: center;
-    color: var(--muted);
-    padding: 32px;
-    font-size: 0.88rem;
-    font-style: italic;
-  }
-
-  /* CLAUDE BRAND FOOTER */
-  .brand-footer {
-    text-align: center;
-    margin-top: 32px;
-    padding-top: 20px;
-    border-top: 1px solid var(--border);
-    font-size: 0.78rem;
-    color: var(--muted);
-  }
-
-  .brand-footer a {
-    color: var(--accent);
-    text-decoration: none;
-  }
-
-  .brand-footer a:hover {
-    text-decoration: underline;
-  }
-
-  @media (max-width: 600px) {
-    body { padding: 20px 10px; }
-    .app-container { padding: 20px; }
-    h1 { font-size: 1.6rem; }
-    .form-row { flex-direction: column; }
-  }
-</style>
+    @media (max-width: 600px) {
+      body { padding: 20px 10px; }
+      .app-container { padding: 20px; }
+      h1 { font-size: 1.6rem; }
+      .form-row { flex-direction: column; }
+    }
+  </style>
 </head>
 <body>
 
@@ -575,7 +654,7 @@
     <button class="tab" onclick="showTab('jadwal')" id="tab-jadwal">📅 Jadwal</button>
     <button class="tab" onclick="showTab('progres')" id="tab-progres">📊 Progres</button>
     <button class="tab" onclick="showTab('pengingat')" id="tab-pengingat">🔔 Pengingat</button>
-    <button class="tab" onclick="showTab('cloud')" id="tab-cloud">☁️ Cloud</button>
+    <button class="tab" onclick="showTab('pengaturan')" id="tab-pengaturan">⚙️ Pengaturan</button>
   </div>
 
   <!-- PANEL: TUGAS -->
@@ -592,18 +671,17 @@
       <div class="form-row">
         <input type="text" id="inputNamaTugas" placeholder="Nama pekerjaan rumah..." />
         <select id="inputPJ">
-          <option value="">Pilih Penanggung Jawab</option>
-          <option value="Ayah">Ayah</option>
-          <option value="Ibu">Ibu</option>
-          <option value="Kakak">Kakak</option>
-          <option value="Adik">Adik</option>
+          <!-- Dinamis diisi lewat JS -->
         </select>
       </div>
       <div class="form-row">
-        <select id="inputFrekuensi">
+        <select id="inputFrekuensi" onchange="toggleFormInputs()">
           <option value="Harian">Setiap Hari (Harian)</option>
           <option value="Mingguan">Mingguan (Hari Tertentu)</option>
+          <option value="Bulanan">Bulanan (Tanggal Tertentu)</option>
         </select>
+        
+        <!-- Dropdown Hari (Mingguan) -->
         <select id="inputHari" style="display:none">
           <option value="Senin">Senin</option>
           <option value="Selasa">Selasa</option>
@@ -613,6 +691,12 @@
           <option value="Sabtu">Sabtu</option>
           <option value="Minggu">Minggu</option>
         </select>
+
+        <!-- Dropdown Tanggal (Bulanan) -->
+        <select id="inputTanggal" style="display:none">
+          <!-- Diisi via JS (1-31) -->
+        </select>
+
         <button class="btn btn-primary" onclick="tambahTugas()">Tambah Tugas</button>
       </div>
     </div>
@@ -629,6 +713,12 @@
       <div id="listMingguan"></div>
     </div>
 
+    <!-- Tugas Bulanan -->
+    <div class="card">
+      <h2>📅 Tugas Bulanan</h2>
+      <div id="listBulanan"></div>
+    </div>
+
     <div style="text-align:center; margin-top:4px; display:flex; gap:12px; justify-content:center;">
       <button class="btn btn-outline" onclick="resetHarian()">🔄 Reset Tugas Harian</button>
       <button class="btn btn-primary" onclick="tarikCloud()" id="btnSyncManual" style="display:none">📥 Tarik Data Cloud</button>
@@ -638,7 +728,7 @@
   <!-- PANEL: JADWAL -->
   <div id="panel-jadwal" class="panel">
     <div class="card">
-      <h2>📅 Jadwal Mingguan</h2>
+      <h2>📅 Rencana & Jadwal</h2>
       <div id="jadwalList"></div>
     </div>
   </div>
@@ -675,8 +765,44 @@
     </div>
   </div>
 
-  <!-- PANEL: CLOUD SETTINGS -->
-  <div id="panel-cloud" class="panel">
+  <!-- PANEL: PENGATURAN & CLOUD -->
+  <div id="panel-pengaturan" class="panel">
+    <!-- KELOLA ANGGOTA -->
+    <div class="card">
+      <h2>👨‍👩‍👧‍👦 Kelola Anggota Keluarga</h2>
+      <div style="margin-bottom:16px; font-size:0.88rem; color:var(--muted);">
+        Tambahkan, edit, atau hapus anggota keluarga Anda beserta warna temanya.
+      </div>
+      
+      <table class="m-table">
+        <thead>
+          <tr>
+            <th>Nama Anggota</th>
+            <th>Warna Badge</th>
+            <th>Aksi</th>
+          </tr>
+        </thead>
+        <tbody id="memberListTable">
+          <!-- Dinamis diisi lewat JS -->
+        </tbody>
+      </table>
+
+      <h3>➕ Tambah Anggota Baru</h3>
+      <div class="form-row" style="margin-top:10px;">
+        <input type="text" id="newMemberName" placeholder="Nama anggota keluarga..." />
+        <select id="newMemberColor">
+          <option value="blue">Biru Ocean</option>
+          <option value="purple">Ungu Amethyst</option>
+          <option value="green">Hijau Forest</option>
+          <option value="amber">Kuning Amber</option>
+          <option value="coral">Coral Peach</option>
+          <option value="slate">Abu Slate</option>
+        </select>
+        <button class="btn btn-primary" onclick="tambahAnggota()">Tambah</button>
+      </div>
+    </div>
+
+    <!-- SUPABASE SETTINGS -->
     <div class="card">
       <h2>☁️ Konfigurasi Supabase Cloud Sync</h2>
       <div style="margin-bottom:18px; font-size:0.88rem; color:var(--muted); line-height:1.5;">
@@ -700,23 +826,25 @@
       </div>
 
       <div class="help-box">
-        <strong>🛠 Cara Setup Database Gratis di Supabase:</strong>
+        <strong>🛠 Cara Setup/Upgrade Database di Supabase:</strong>
         <ol>
-          <li>Daftar di <a href="https://supabase.com" target="_blank" style="color:var(--accent); font-weight: 500;">supabase.com</a>.</li>
-          <li>Buat Project baru (pilih Singapura sebagai lokasi terdekat).</li>
-          <li>Masuk ke menu **SQL Editor** di panel kiri -> klik **New Query**.</li>
+          <li>Masuk ke menu **SQL Editor** di panel kiri dashboard Supabase -> klik **New Query**.</li>
           <li>Paste kode SQL di bawah ini, lalu klik tombol **Run**:</li>
         </ol>
-        <code class="sql-code">create table household_sync (
+        <code class="sql-code">create table if not exists household_sync (
   id text primary key,
   tasks jsonb default '[]'::jsonb,
   reminders jsonb default '[]'::jsonb,
+  members jsonb default '[]'::jsonb,
   updated_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
+-- JALANKAN INI JIKA TABEL SUDAH PERNAH DIBUAT SEBELUMNYA:
+alter table household_sync add column if not exists members jsonb default '[]'::jsonb;
+
 -- Matikan RLS agar client dapat membaca/menulis data secara langsung
 alter table household_sync disable row level security;</code>
-        <ol start="5">
+        <ol start="3">
           <li>Pergi ke **Project Settings (⚙️)** -> **API**.</li>
           <li>Salin **Project URL** dan **anon public key**, lalu masukkan ke kolom di atas!</li>
         </ol>
@@ -727,46 +855,76 @@ alter table household_sync disable row level security;</code>
   <!-- CLAUDE BRAND FOOTER -->
   <div class="brand-footer">
     A household tool prototype &bull; Built with Claude design principles &bull; 
-    <a href="#" onclick="showTab('cloud')">Configure Cloud Sync</a>
+    <a href="#" onclick="showTab('pengaturan')">Kelola Anggota & Cloud</a>
   </div>
+</div>
+
+<!-- FLOATING TOAST NOTIFICATION -->
+<div id="motivationalToast" class="toast">
+  <span class="toast-icon">✨</span>
+  <span id="toastMessage">Semangat! Rumah bersih adalah cermin hati bahagia!</span>
 </div>
 
 <script>
 const DAYS = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
-const MEMBERS = [
-  { name:'Ayah', cls:'ayah' },
-  { name:'Ibu', cls:'ibu' },
-  { name:'Kakak', cls:'kakak' },
-  { name:'Adik', cls:'adik' },
+
+// Pesan motivasi ketika tugas selesai
+const MOTIVATIONAL_QUOTES = [
+  "Luar biasa! Satu tugas selesai, rumah kita makin nyaman! ✨",
+  "Hebat sekali! Anggota keluarga yang satu ini memang andalan! 🌟",
+  "Kerja bagus! Terima kasih banyak atas bantuannya hari ini! ❤️",
+  "Setitik keringat, sejuta kehangatan untuk keluarga. Semangat terus! 🏠",
+  "Setiap tugas kecil membuat rumah kita makin harmonis! 🌸",
+  "Mantap! Terus pertahaman semangat gotong royongnya! 💪",
+  "Terima kasih sudah peduli dan merawat rumah kita tercinta! 🥰"
 ];
 
-// Default data awal
+// Default Anggota Awal
+const DEFAULT_MEMBERS = [
+  { name: 'Ayah', color: 'blue' },
+  { name: 'Ibu', color: 'purple' },
+  { name: 'Kakak', color: 'green' },
+  { name: 'Adik', color: 'amber' }
+];
+
+// Default tugas awal
 const DEFAULT_TASKS = [
-  { id:1, nama:'Menyapu lantai', pj:'Ibu', frekuensi:'Harian', hari:'Senin', done:false },
-  { id:2, nama:'Mencuci piring', pj:'Ayah', frekuensi:'Harian', hari:'Senin', done:false },
-  { id:3, nama:'Membuang sampah', pj:'Kakak', frekuensi:'Harian', hari:'Selasa', done:false },
-  { id:4, nama:'Lap meja makan', pj:'Adik', frekuensi:'Harian', hari:'Rabu', done:true },
-  { id:5, nama:'Cuci pakaian', pj:'Ibu', frekuensi:'Mingguan', hari:'Sabtu', done:false },
-  { id:6, nama:'Bersihkan kamar mandi', pj:'Ayah', frekuensi:'Mingguan', hari:'Minggu', done:true },
+  { id:1, nama: 'Menyapu lantai', pj: 'Ibu', frekuensi: 'Harian', hari: 'Senin', tanggal: '', done: false },
+  { id:2, nama: 'Mencuci piring', pj: 'Ayah', frekuensi: 'Harian', hari: 'Senin', tanggal: '', done: false },
+  { id:3, nama: 'Membuang sampah', pj: 'Kakak', frekuensi: 'Harian', hari: 'Selasa', tanggal: '', done: false },
+  { id:4, nama: 'Lap meja makan', pj: 'Adik', frekuensi: 'Harian', hari: 'Rabu', tanggal: '', done: true },
+  { id:5, nama: 'Cuci pakaian', pj: 'Ibu', frekuensi: 'Mingguan', hari: 'Sabtu', tanggal: '', done: false },
+  { id:6, nama: 'Bersihkan kamar mandi', pj: 'Ayah', frekuensi: 'Mingguan', hari: 'Minggu', tanggal: '', done: true },
 ];
 
 const DEFAULT_REMINDERS = [
-  { id:1, task:'Cuci pakaian', jadwal:'Setiap Sabtu — 08.00', aktif:true },
-  { id:2, task:'Bersihkan dapur', jadwal:'Setiap hari — 19.00', aktif:true },
+  { id:1, task: 'Cuci pakaian', jadwal: 'Setiap Sabtu — 08.00', aktif: true },
+  { id:2, task: 'Bersihkan dapur', jadwal: 'Setiap hari — 19.00', aktif: true },
 ];
 
 // State Manager
 let data = {
+  members: DEFAULT_MEMBERS,
   tasks: DEFAULT_TASKS,
   reminders: DEFAULT_REMINDERS,
-  nextId: 10
+  nextId: 20
 };
 
 let supabaseClient = null;
 let cloudConfig = null;
+let editingTaskId = null; // Menyimpan ID tugas yang sedang diedit secara inline
+let realtimeChannel = null;
 
 // Initialize
 function init() {
+  // Populate dropdown tanggal bulanan (1-31)
+  const selectTanggal = document.getElementById('inputTanggal');
+  let optionHTML = '';
+  for(let i=1; i<=31; i++) {
+    optionHTML += `<option value="${i}">Tanggal ${i}</option>`;
+  }
+  selectTanggal.innerHTML = optionHTML;
+
   // Load local config
   const savedConfig = localStorage.getItem('srt_cloud_config');
   if (savedConfig) {
@@ -779,8 +937,10 @@ function init() {
       supabaseClient = supabase.createClient(cloudConfig.url, cloudConfig.key);
       updateSyncBadge(true, `Tersinkron Cloud: ${cloudConfig.householdId}`);
       document.getElementById('btnSyncManual').style.display = 'inline-flex';
-      // Load data from cloud
+      
+      // Load data & siapkan auto-sync real-time
       tarikCloud(true);
+      siapkanRealtimeSync();
     } catch (e) {
       console.error(e);
       updateSyncBadge(false, 'Gagal koneksi Cloud');
@@ -796,52 +956,85 @@ function init() {
 }
 
 function loadFromLocalFallback() {
+  data.members = JSON.parse(localStorage.getItem('srt_members')) || DEFAULT_MEMBERS;
   data.tasks = JSON.parse(localStorage.getItem('srt_tasks')) || DEFAULT_TASKS;
   data.reminders = JSON.parse(localStorage.getItem('srt_reminders')) || DEFAULT_REMINDERS;
-  data.nextId = parseInt(localStorage.getItem('srt_nextId')) || 10;
+  data.nextId = parseInt(localStorage.getItem('srt_nextId')) || 20;
   updateSyncBadge(false, 'Offline Mode (Lokal)');
   render();
 }
 
-function updateSyncBadge(online, text) {
+function updateSyncBadge(statusType, text) {
   const badge = document.getElementById('syncStatusBadge');
   const dot = document.getElementById('syncDot');
   const txt = document.getElementById('syncStatusText');
-  if (online) {
+  
+  badge.classList.remove('online', 'warning');
+  
+  if (statusType === true) {
     badge.classList.add('online');
     dot.textContent = '🟢';
     txt.textContent = text;
+  } else if (statusType === 'warning') {
+    badge.classList.add('warning');
+    dot.textContent = '🟡';
+    txt.textContent = text;
   } else {
-    badge.classList.remove('online');
     dot.textContent = '🔴';
     txt.textContent = text;
   }
 }
 
-// Save Data (Router: Local + Cloud)
+// Save Data (Router: Local + Cloud dengan Dynamic Protection)
 async function pushData() {
+  const nowTime = Date.now();
+  localStorage.setItem('srt_last_push_time', nowTime.toString());
+  
   // Selalu save local sebagai backup offline
+  localStorage.setItem('srt_members', JSON.stringify(data.members));
   localStorage.setItem('srt_tasks', JSON.stringify(data.tasks));
   localStorage.setItem('srt_reminders', JSON.stringify(data.reminders));
   localStorage.setItem('srt_nextId', data.nextId);
 
   if (supabaseClient && cloudConfig) {
     updateSyncBadge(true, 'Menyimpan ke Cloud...');
+    
+    // Siapkan Payload data standar
+    const payload = {
+      id: cloudConfig.householdId,
+      tasks: data.tasks,
+      reminders: data.reminders,
+      updated_at: new Date().toISOString()
+    };
+
     try {
+      // 1. Coba simpan lengkap dengan data anggota keluarga (membutuhkan kolom members)
       const { error } = await supabaseClient
         .from('household_sync')
-        .upsert({
-          id: cloudConfig.householdId,
-          tasks: data.tasks,
-          reminders: data.reminders,
-          updated_at: new Date().toISOString()
-        });
+        .upsert({ ...payload, members: data.members });
 
-      if (error) throw error;
-      updateSyncBadge(true, `Tersinkron Cloud: ${cloudConfig.householdId}`);
+      if (error) {
+        // Jika gagal karena kolom members belum ada (PostgreSQL error code 42703: undefined_column)
+        if (error.code === '42703') {
+          console.warn("Kolom 'members' belum dibuat di Supabase. Menyimpan data tugas & pengingat saja.");
+          
+          // 2. Kirim ulang hanya data tugas & pengingat (fallback aman)
+          const { error: retryError } = await supabaseClient
+            .from('household_sync')
+            .upsert(payload);
+            
+          if (retryError) throw retryError;
+          
+          updateSyncBadge('warning', 'Tersinkron (Tabel Supabase belum di-upgrade SQL)');
+        } else {
+          throw error;
+        }
+      } else {
+        updateSyncBadge(true, `Tersinkron Cloud: ${cloudConfig.householdId}`);
+      }
     } catch (e) {
       console.error('Push failed', e);
-      updateSyncBadge(true, 'Gagal Sinkronisasi Cloud (Menggunakan Lokal)');
+      updateSyncBadge('warning', 'Gagal Sinkronisasi Cloud (Menggunakan Lokal)');
     }
   }
 }
@@ -861,19 +1054,25 @@ async function tarikCloud(isInit = false) {
 
     if (rows && rows.length > 0) {
       const cloudData = rows[0];
+      
+      // Jika kolom members tidak didukung / kosong di cloud, gunakan offline
+      data.members = cloudData.members || data.members || DEFAULT_MEMBERS;
       data.tasks = cloudData.tasks || [];
       data.reminders = cloudData.reminders || [];
       
-      // Hitung nextId agar ID tugas baru tidak tabrakan
+      // Hitung nextId agar ID baru tidak tabrakan
       const allIds = data.tasks.map(t => t.id).concat(data.reminders.map(r => r.id));
       data.nextId = (allIds.length > 0 ? Math.max(...allIds) : 0) + 1;
 
       // Update backup local
+      localStorage.setItem('srt_members', JSON.stringify(data.members));
       localStorage.setItem('srt_tasks', JSON.stringify(data.tasks));
       localStorage.setItem('srt_reminders', JSON.stringify(data.reminders));
       localStorage.setItem('srt_nextId', data.nextId);
       
-      updateSyncBadge(true, `Tersinkron Cloud: ${cloudConfig.householdId}`);
+      // Cek apakah database sudah ada kolom members untuk status badge yang akurat
+      const tabelLengkap = (cloudData.members !== undefined);
+      updateSyncBadge(tabelLengkap ? true : 'warning', `Tersinkron Cloud: ${cloudConfig.householdId}`);
     } else {
       // Jika data cloud masih kosong, upload data lokal saat ini ke cloud
       await pushData();
@@ -881,9 +1080,73 @@ async function tarikCloud(isInit = false) {
     render();
   } catch (e) {
     console.error('Fetch failed', e);
-    updateSyncBadge(true, 'Gagal mengambil data Cloud (Menggunakan Lokal)');
+    updateSyncBadge('warning', 'Gagal mengambil data Cloud (Menggunakan Lokal)');
     if (isInit) loadFromLocalFallback();
   }
+}
+
+// SETUP SUPABASE REALTIME SYNC (Auto-Sync)
+function siapkanRealtimeSync() {
+  if (!supabaseClient || !cloudConfig) return;
+
+  // Hapus channel lama jika ada
+  if (realtimeChannel) {
+    supabaseClient.removeChannel(realtimeChannel);
+  }
+
+  // Buat channel realtime baru
+  realtimeChannel = supabaseClient
+    .channel('household-live-sync')
+    .on(
+      'postgres_changes',
+      {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'household_sync',
+        filter: `id=eq.${cloudConfig.householdId}`
+      },
+      (payload) => {
+        console.log('Perubahan Cloud Diterima secara Realtime!', payload);
+        const newData = payload.new;
+        
+        if (newData) {
+          // Bandingkan waktu pembaruan agar tidak terjadi infinite looping
+          const cloudTime = new Date(newData.updated_at).getTime();
+          const localPushStr = localStorage.getItem('srt_last_push_time');
+          const localPushTime = localPushStr ? parseInt(localPushStr) : 0;
+          
+          // Sinkronisasi hanya jika perubahan cloud lebih baru dibanding klik terakhir perangkat lokal
+          if (cloudTime > localPushTime) {
+            data.tasks = newData.tasks || [];
+            data.reminders = newData.reminders || [];
+            if (newData.members) {
+              data.members = newData.members;
+            }
+            
+            const allIds = data.tasks.map(t => t.id).concat(data.reminders.map(r => r.id));
+            data.nextId = (allIds.length > 0 ? Math.max(...allIds) : 0) + 1;
+
+            localStorage.setItem('srt_members', JSON.stringify(data.members));
+            localStorage.setItem('srt_tasks', JSON.stringify(data.tasks));
+            localStorage.setItem('srt_reminders', JSON.stringify(data.reminders));
+            localStorage.setItem('srt_nextId', data.nextId);
+            
+            render();
+            
+            const tabelLengkap = (newData.members !== undefined);
+            updateSyncBadge(tabelLengkap ? true : 'warning', `Auto-Sync Aktif: ${cloudConfig.householdId}`);
+            
+            // Tampilkan kedipan toast penyemangat
+            const toast = document.getElementById('motivationalToast');
+            const messageElement = document.getElementById('toastMessage');
+            messageElement.textContent = "Data ter-update otomatis secara real-time! 🔄";
+            toast.classList.add('show');
+            setTimeout(() => { toast.classList.remove('show'); }, 2000);
+          }
+        }
+      }
+    )
+    .subscribe();
 }
 
 // CLOUD SETTINGS ACTIONS
@@ -906,6 +1169,7 @@ function simpanConfigCloud() {
     supabaseClient = supabase.createClient(url, key);
     document.getElementById('btnSyncManual').style.display = 'inline-flex';
     tarikCloud();
+    siapkanRealtimeSync();
   } catch (e) {
     alert('Gagal menghubungkan ke Supabase. Cek kembali URL & Key Anda.');
     console.error(e);
@@ -915,6 +1179,10 @@ function simpanConfigCloud() {
 function hapusConfigCloud() {
   if (!confirm('Putuskan hubungan dengan Supabase? Data akan kembali menggunakan penyimpanan lokal.')) return;
   localStorage.removeItem('srt_cloud_config');
+  if (realtimeChannel) {
+    supabaseClient.removeChannel(realtimeChannel);
+    realtimeChannel = null;
+  }
   cloudConfig = null;
   supabaseClient = null;
   document.getElementById('sbUrl').value = '';
@@ -934,74 +1202,225 @@ function showTab(name) {
   render();
 }
 
-// Toggle input hari berdasarkan frekuensi mingguan
-document.getElementById('inputFrekuensi').addEventListener('change', function() {
-  document.getElementById('inputHari').style.display = this.value === 'Mingguan' ? 'block' : 'none';
-});
+// Toggle input hari/tanggal di form utama berdasarkan frekuensi
+function toggleFormInputs() {
+  const freq = document.getElementById('inputFrekuensi').value;
+  const inputHari = document.getElementById('inputHari');
+  const inputTanggal = document.getElementById('inputTanggal');
+  
+  if (freq === 'Harian') {
+    inputHari.style.display = 'none';
+    inputTanggal.style.display = 'none';
+  } else if (freq === 'Mingguan') {
+    inputHari.style.display = 'block';
+    inputTanggal.style.display = 'none';
+  } else if (freq === 'Bulanan') {
+    inputHari.style.display = 'none';
+    inputTanggal.style.display = 'block';
+  }
+}
+
+// Toggle input hari/tanggal di form edit inline
+function toggleEditFormInputs(id) {
+  const freq = document.getElementById(`editFrekuensi-${id}`).value;
+  const inputHari = document.getElementById(`editHari-${id}`);
+  const inputTanggal = document.getElementById(`editTanggal-${id}`);
+  
+  if (freq === 'Harian') {
+    inputHari.style.display = 'none';
+    inputTanggal.style.display = 'none';
+  } else if (freq === 'Mingguan') {
+    inputHari.style.display = 'block';
+    inputTanggal.style.display = 'none';
+  } else if (freq === 'Bulanan') {
+    inputHari.style.display = 'none';
+    inputTanggal.style.display = 'block';
+  }
+}
+
+// Helper: Cari warna berdasarkan nama anggota
+function getMemberColor(name) {
+  const m = data.members.find(memb => memb.name === name);
+  return m ? m.color : 'slate';
+}
+
+// Notifikasi Toast Penyemangat
+function triggerMotivationalToast() {
+  const toast = document.getElementById('motivationalToast');
+  const messageElement = document.getElementById('toastMessage');
+  
+  // Ambil quote acak
+  const randomQuote = MOTIVATIONAL_QUOTES[Math.floor(Math.random() * MOTIVATIONAL_QUOTES.length)];
+  messageElement.textContent = randomQuote;
+  
+  // Show toast dengan kelas animasi
+  toast.classList.add('show');
+  
+  // Sembunyikan setelah 3.5 detik
+  setTimeout(() => {
+    toast.classList.remove('show');
+  }, 3500);
+}
 
 // UI Renders
 function render() {
+  updatePJDropdowns();
   renderMembers();
   renderTasks();
   renderJadwal();
   renderProgress();
   renderReminders();
+  renderMembersTable();
+}
+
+// Update Dropdown PJ di form tambah tugas agar dinamis
+function updatePJDropdowns() {
+  const select = document.getElementById('inputPJ');
+  if (!select) return;
+  select.innerHTML = '<option value="">Pilih Penanggung Jawab</option>' + 
+    data.members.map(m => `<option value="${m.name}">${m.name}</option>`).join('');
 }
 
 function renderMembers() {
   const grid = document.getElementById('membersGrid');
-  grid.innerHTML = MEMBERS.map(m => {
+  grid.innerHTML = data.members.map(m => {
     const total = data.tasks.filter(t => t.pj === m.name).length;
     const done = data.tasks.filter(t => t.pj === m.name && t.done).length;
-    return `<div class="member-badge ${m.cls}">
+    return `<div class="member-badge color-${m.color}">
       <div>${m.name}</div>
       <div class="member-count">${done}/${total} tugas</div>
     </div>`;
   }).join('');
 }
 
+// Render list tugas dengan mode normal & inline edit
 function renderTasks() {
   const harian = data.tasks.filter(t => t.frekuensi === 'Harian');
   const mingguan = data.tasks.filter(t => t.frekuensi === 'Mingguan');
+  const bulanan = data.tasks.filter(t => t.frekuensi === 'Bulanan');
 
   function taskHTML(t) {
+    const mColor = getMemberColor(t.pj);
+    
+    // Jika tugas sedang dalam mode edit inline
+    if (editingTaskId === t.id) {
+      // Loop untuk populate PJ options
+      const pjOptions = data.members.map(memb => `<option value="${memb.name}" ${memb.name === t.pj ? 'selected' : ''}>${memb.name}</option>`).join('');
+      
+      // Loop tanggal (1-31)
+      let tglOptions = '';
+      for (let i = 1; i <= 31; i++) {
+        tglOptions += `<option value="${i}" ${parseInt(t.tanggal) === i ? 'selected' : ''}>Tanggal ${i}</option>`;
+      }
+
+      return `<div class="task-item" style="border-color: var(--accent);">
+        <div class="task-edit-row">
+          <div class="task-edit-inputs">
+            <input type="text" id="editNama-${t.id}" value="${t.nama}" style="flex:2;" />
+            
+            <select id="editPJ-${t.id}">
+              ${pjOptions}
+            </select>
+            
+            <select id="editFrekuensi-${t.id}" onchange="toggleEditFormInputs(${t.id})">
+              <option value="Harian" ${t.frekuensi === 'Harian' ? 'selected' : ''}>Harian</option>
+              <option value="Mingguan" ${t.frekuensi === 'Mingguan' ? 'selected' : ''}>Mingguan</option>
+              <option value="Bulanan" ${t.frekuensi === 'Bulanan' ? 'selected' : ''}>Bulanan</option>
+            </select>
+
+            <select id="editHari-${t.id}" style="display: ${t.frekuensi === 'Mingguan' ? 'block' : 'none'}">
+              <option value="Senin" ${t.hari === 'Senin' ? 'selected' : ''}>Senin</option>
+              <option value="Selasa" ${t.hari === 'Selasa' ? 'selected' : ''}>Selasa</option>
+              <option value="Rabu" ${t.hari === 'Rabu' ? 'selected' : ''}>Rabu</option>
+              <option value="Kamis" ${t.hari === 'Kamis' ? 'selected' : ''}>Kamis</option>
+              <option value="Jumat" ${t.hari === 'Jumat' ? 'selected' : ''}>Jumat</option>
+              <option value="Sabtu" ${t.hari === 'Sabtu' ? 'selected' : ''}>Sabtu</option>
+              <option value="Minggu" ${t.hari === 'Minggu' ? 'selected' : ''}>Minggu</option>
+            </select>
+
+            <select id="editTanggal-${t.id}" style="display: ${t.frekuensi === 'Bulanan' ? 'block' : 'none'}">
+              ${tglOptions}
+            </select>
+          </div>
+          <div class="task-edit-actions">
+            <button class="btn btn-outline" style="padding: 6px 12px; font-size:0.8rem;" onclick="batalEditTugas()">Batal</button>
+            <button class="btn btn-primary" style="padding: 6px 12px; font-size:0.8rem;" onclick="simpanEditTugas(${t.id})">Simpan</button>
+          </div>
+        </div>
+      </div>`;
+    }
+
+    // Tampilan tugas biasa
+    let metaStr = '☀️ Harian';
+    if(t.frekuensi === 'Mingguan') metaStr = '📅 ' + t.hari;
+    if(t.frekuensi === 'Bulanan') metaStr = '🗓️ Tanggal ' + t.tanggal;
+
     return `<div class="task-item ${t.done ? 'done' : ''}">
       <div class="task-check ${t.done ? 'checked' : ''}" onclick="toggleTask(${t.id})"></div>
       <div class="task-info">
         <div class="task-name">${t.nama}</div>
-        <div class="task-meta">${t.frekuensi === 'Mingguan' ? '📅 ' + t.hari : '☀️ Harian'}</div>
+        <div class="task-meta">${metaStr}</div>
       </div>
-      <span class="badge ${t.pj.toLowerCase()}">${t.pj}</span>
-      <button class="delete-btn" onclick="hapusTugas(${t.id})">🗑</button>
+      <span class="badge badge-${mColor}">${t.pj}</span>
+      <button class="action-btn" onclick="aktifkanEditTugas(${t.id})" title="Edit Tugas">✏️</button>
+      <button class="action-btn delete-btn" onclick="hapusTugas(${t.id})" title="Hapus Tugas">🗑</button>
     </div>`;
   }
 
   document.getElementById('listHarian').innerHTML = harian.length ? harian.map(taskHTML).join('') : '<div class="empty">Belum ada tugas harian</div>';
   document.getElementById('listMingguan').innerHTML = mingguan.length ? mingguan.map(taskHTML).join('') : '<div class="empty">Belum ada tugas mingguan</div>';
+  document.getElementById('listBulanan').innerHTML = bulanan.length ? bulanan.map(taskHTML).join('') : '<div class="empty">Belum ada tugas bulanan</div>';
 }
 
 function renderJadwal() {
   const byDay = {};
   DAYS.slice(1).concat(['Minggu']).forEach(d => byDay[d] = []);
   data.tasks.forEach(t => {
-    if (t.hari && byDay[t.hari] !== undefined) byDay[t.hari].push(t);
+    if (t.frekuensi === 'Mingguan' && t.hari && byDay[t.hari] !== undefined) {
+      byDay[t.hari].push(t);
+    }
   });
 
   const todayName = DAYS[new Date().getDay()];
   let html = '';
+  
+  // Render Mingguan
+  html += `<h3 style="font-family:'Lora',serif; font-size:1rem; margin-bottom:12px; color:var(--text)">📅 Jadwal Mingguan</h3>`;
   Object.entries(byDay).forEach(([day, tasks]) => {
     if (!tasks.length) return;
     const isToday = day === todayName;
     html += `<div class="schedule-day ${isToday ? 'today-highlight' : ''}">
       <div class="day-name">${day}${isToday ? ' ← Hari ini' : ''}</div>
-      ${tasks.map(t => `<div class="schedule-task">
-        <span>${t.nama}</span>
-        <span class="badge ${t.pj.toLowerCase()}">${t.pj}</span>
-      </div>`).join('')}
+      ${tasks.map(t => {
+        const mColor = getMemberColor(t.pj);
+        return `<div class="schedule-task">
+          <span>${t.nama}</span>
+          <span class="badge badge-${mColor}">${t.pj}</span>
+        </div>`;
+      }).join('')}
     </div>`;
   });
 
-  document.getElementById('jadwalList').innerHTML = html || '<div class="empty">Belum ada jadwal</div>';
+  // Render Bulanan
+  const bulananTasks = data.tasks.filter(t => t.frekuensi === 'Bulanan');
+  if (bulananTasks.length > 0) {
+    // Urutkan berdasarkan tanggal
+    bulananTasks.sort((a,b) => parseInt(a.tanggal) - parseInt(b.tanggal));
+    
+    html += `<h3 style="font-family:'Lora',serif; font-size:1rem; margin-top:20px; margin-bottom:12px; color:var(--text)">🗓️ Jadwal Bulanan</h3>`;
+    html += `<div class="schedule-day" style="border-left-color: var(--accent);">
+      <div class="day-name">Rencana Bulanan</div>
+      ${bulananTasks.map(t => {
+        const mColor = getMemberColor(t.pj);
+        return `<div class="schedule-task">
+          <span><strong>Tgl ${t.tanggal}</strong>: ${t.nama}</span>
+          <span class="badge badge-${mColor}">${t.pj}</span>
+        </div>`;
+      }).join('')}
+    </div>`;
+  }
+
+  document.getElementById('jadwalList').innerHTML = html || '<div class="empty">Belum ada rencana jadwal</div>';
 }
 
 function renderProgress() {
@@ -1019,16 +1438,24 @@ function renderProgress() {
   document.getElementById('mainProgress').style.width = pct + '%';
   document.getElementById('progressLabel').textContent = `${done} dari ${total} tugas selesai`;
 
-  const mpHtml = MEMBERS.map(m => {
+  const mpHtml = data.members.map(m => {
     const mTotal = data.tasks.filter(t => t.pj === m.name).length;
     const mDone = data.tasks.filter(t => t.pj === m.name && t.done).length;
     const mPct = mTotal ? Math.round(mDone / mTotal * 100) : 0;
+    
+    let hexColor = '#d97756';
+    if(m.color === 'blue') hexColor = '#2f667e';
+    if(m.color === 'purple') hexColor = '#934c7a';
+    if(m.color === 'green') hexColor = '#2d6b56';
+    if(m.color === 'amber') hexColor = '#a07218';
+    if(m.color === 'slate') hexColor = '#6e675f';
+
     return `<div class="member-progress">
       <div class="member-progress-label">
-        <span class="${m.cls}" style="color:var(--${m.cls}); font-weight:600">${m.name}</span>
+        <span class="color-${m.color}" style="background:transparent!important; font-weight:600">${m.name}</span>
         <span style="color:var(--muted)">${mDone}/${mTotal} — ${mPct}%</span>
       </div>
-      <div class="progress-bar"><div class="progress-fill" style="width:${mPct}%; background:var(--${m.cls})"></div></div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${mPct}%; background:${hexColor}"></div></div>
     </div>`;
   }).join('');
 
@@ -1051,11 +1478,43 @@ function renderReminders() {
     </div>`).join('');
 }
 
+// Render Kelola Anggota Keluarga
+function renderMembersTable() {
+  const tbody = document.getElementById('memberListTable');
+  if (!tbody) return;
+  tbody.innerHTML = data.members.map((m, index) => {
+    return `<tr>
+      <td>
+        <input type="text" value="${m.name}" onchange="editNamaAnggota(${index}, this.value)" style="padding:4px 8px; min-width:100px; width:100%" />
+      </td>
+      <td>
+        <select onchange="editWarnaAnggota(${index}, this.value)" style="padding:4px 8px; min-width:80px; width:100%">
+          <option value="blue" ${m.color === 'blue' ? 'selected' : ''}>Biru</option>
+          <option value="purple" ${m.color === 'purple' ? 'selected' : ''}>Ungu</option>
+          <option value="green" ${m.color === 'green' ? 'selected' : ''}>Hijau</option>
+          <option value="amber" ${m.color === 'amber' ? 'selected' : ''}>Kuning</option>
+          <option value="coral" ${m.color === 'coral' ? 'selected' : ''}>Coral</option>
+          <option value="slate" ${m.color === 'slate' ? 'selected' : ''}>Slate</option>
+        </select>
+      </td>
+      <td>
+        <button class="btn btn-danger" onclick="hapusAnggota(${index})" style="padding: 4px 10px; font-size: 0.78rem;">Hapus</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
 // User Actions
 async function toggleTask(id) {
   const t = data.tasks.find(t => t.id === id);
   if (t) {
     t.done = !t.done;
+    
+    // Trigger toast motivasi jika tugas dicentang selesai (t.done === true)
+    if (t.done) {
+      triggerMotivationalToast();
+    }
+    
     render();
     await pushData();
   }
@@ -1071,15 +1530,60 @@ async function tambahTugas() {
   const nama = document.getElementById('inputNamaTugas').value.trim();
   const pj = document.getElementById('inputPJ').value;
   const frekuensi = document.getElementById('inputFrekuensi').value;
-  const hari = document.getElementById('inputHari').value || DAYS[new Date().getDay()];
+  const hari = document.getElementById('inputHari').value;
+  const tanggal = document.getElementById('inputTanggal').value;
+  
   if (!nama || !pj) { alert('Isi nama tugas dan penanggung jawab!'); return; }
 
-  data.tasks.push({ id: data.nextId++, nama, pj, frekuensi, hari, done: false });
+  data.tasks.push({ 
+    id: data.nextId++, 
+    nama, 
+    pj, 
+    frekuensi, 
+    hari: frekuensi === 'Mingguan' ? hari : '', 
+    tanggal: frekuensi === 'Bulanan' ? tanggal : '', 
+    done: false 
+  });
+  
   render();
   await pushData();
   
   document.getElementById('inputNamaTugas').value = '';
   document.getElementById('inputPJ').value = '';
+}
+
+// Edit Tugas Actions
+function aktifkanEditTugas(id) {
+  editingTaskId = id;
+  render();
+}
+
+function batalEditTugas() {
+  editingTaskId = null;
+  render();
+}
+
+async function simpanEditTugas(id) {
+  const t = data.tasks.find(task => task.id === id);
+  if (!t) return;
+
+  const nama = document.getElementById(`editNama-${id}`).value.trim();
+  const pj = document.getElementById(`editPJ-${id}`).value;
+  const frekuensi = document.getElementById(`editFrekuensi-${id}`).value;
+  const hari = document.getElementById(`editHari-${id}`).value;
+  const tanggal = document.getElementById(`editTanggal-${id}`).value;
+
+  if(!nama) { alert('Nama tugas tidak boleh kosong!'); return; }
+
+  t.nama = nama;
+  t.pj = pj;
+  t.frekuensi = frekuensi;
+  t.hari = frekuensi === 'Mingguan' ? hari : '';
+  t.tanggal = frekuensi === 'Bulanan' ? tanggal : '';
+
+  editingTaskId = null;
+  render();
+  await pushData();
 }
 
 async function resetHarian() {
@@ -1104,6 +1608,54 @@ async function tambahPengingat() {
 
 async function hapusPengingat(id) {
   data.reminders = data.reminders.filter(r => r.id !== id);
+  render();
+  await pushData();
+}
+
+// Anggota Keluarga Actions
+async function tambahAnggota() {
+  const name = document.getElementById('newMemberName').value.trim();
+  const color = document.getElementById('newMemberColor').value;
+  if (!name) { alert('Mohon isi nama anggota baru!'); return; }
+
+  if (data.members.some(m => m.name.toLowerCase() === name.toLowerCase())) {
+    alert('Nama anggota tersebut sudah ada!');
+    return;
+  }
+
+  data.members.push({ name, color });
+  render();
+  await pushData();
+
+  document.getElementById('newMemberName').value = '';
+}
+
+async function editNamaAnggota(index, newName) {
+  const name = newName.trim();
+  if (!name) { alert('Nama tidak boleh kosong!'); render(); return; }
+  
+  const oldName = data.members[index].name;
+  data.members[index].name = name;
+
+  data.tasks.forEach(t => {
+    if (t.pj === oldName) t.pj = name;
+  });
+
+  render();
+  await pushData();
+}
+
+async function editWarnaAnggota(index, color) {
+  data.members[index].color = color;
+  render();
+  await pushData();
+}
+
+async function hapusAnggota(index) {
+  const m = data.members[index];
+  if (!confirm(`Hapus anggota "${m.name}"? Tugas-tugas yang telah diberikan kepadanya akan tetap ada.`)) return;
+  
+  data.members.splice(index, 1);
   render();
   await pushData();
 }
